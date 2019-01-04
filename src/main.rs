@@ -55,8 +55,8 @@ macro_rules! read_value {
 }
 
 use self::Color::*;
-use std::fmt::{Display, Formatter, Result};
 use std::cmp::Ordering;
+use std::fmt::{Display, Formatter, Result};
 
 type Position = (usize, usize);
 
@@ -88,7 +88,7 @@ struct Board {
     latest: (usize, usize),
     turn: Color,
     black_points: i32,
-    white_points: i32
+    white_points: i32,
 }
 
 impl Board {
@@ -98,7 +98,7 @@ impl Board {
             latest: (4, 4),
             turn: Black,
             black_points: 0,
-            white_points: 0
+            white_points: 0,
         };
         b.set_with_color((3, 3), Black); // Black
         b.set_with_color((3, 4), White); // White
@@ -110,7 +110,7 @@ impl Board {
     fn get(&self, (x, y): Position) -> Option<Color> {
         self.map[y][x]
     }
-    
+
     fn set(&mut self, (x, y): Position, color: Option<Color>) {
         self.map[y][x] = color;
     }
@@ -131,32 +131,41 @@ impl Board {
     fn incr_points(&mut self, color: Color) {
         self.plus_points_with_color(1, color);
     }
-    
+
     fn decr_points(&mut self, color: Color) {
         self.plus_points_with_color(-1, color);
     }
 
     fn put(&mut self, (x, y): (usize, usize)) {
-        if let None = self.get((x, y)) {
-            let ex = self.latest;
-            self.set_with_color((x, y), self.turn);
-            self.latest = (x, y);
-            let positions = self.reversable_points();
-            if positions.len() == 0 {
-                self.set(self.latest, None);
-                self.decr_points(self.turn);
-                println!("{:?} has no reversable points, try again!", self.latest);
-                self.latest = ex;
-                return;
-            } else {
-                for position in positions {
-                    self.set_with_color(position, self.turn);
-                    self.decr_points(self.turn.another());
+        let position = (x, y);
+        if x <= 8 && y <= 8 {
+            if let None = self.get(position) {
+                let ex = self.latest;
+                self.set_with_color(position, self.turn);
+                self.latest = position;
+                let positions = self.reversable_points();
+                if positions.len() == 0 {
+                    self.set(self.latest, None);
+                    self.decr_points(self.turn);
+                    println!("{:?} has no reversable points, try again!", self.latest);
+                    self.latest = ex;
+                    return;
+                } else {
+                    for position in positions {
+                        self.set_with_color(position, self.turn);
+                        self.decr_points(self.turn.another());
+                    }
                 }
+                self.turn = self.turn.another();
+            } else {
+                println!(
+                    "{:?} is already put!! {}",
+                    (x, y),
+                    self.get((x, y)).unwrap().to_s()
+                );
             }
-            self.turn = self.turn.another();
         } else {
-            println!("{:?} is already put!! {}", (x, y), self.get((x, y)).unwrap().to_s());
+            println!("You tried to put invalid position {:?}", (x, y));
         }
     }
 
@@ -175,7 +184,7 @@ impl Board {
             let mut betweened = false;
             let mut points = vec![];
             for x in (0..x).rev() {
-                let putted_color = self.get((x,y));
+                let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -197,7 +206,7 @@ impl Board {
             let mut betweened = false;
             let mut points = vec![];
             for x in (x + 1)..8 {
-                let putted_color = self.get((x,y));
+                let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -225,7 +234,7 @@ impl Board {
             let mut betweened = false;
             let mut points = vec![];
             for y in (0..y).rev() {
-                let putted_color = self.get((x,y));
+                let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -247,7 +256,7 @@ impl Board {
             let mut betweened = false;
             let mut points = vec![];
             for y in (y + 1)..8 {
-                let putted_color = self.get((x,y));
+                let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -274,7 +283,7 @@ impl Board {
             let mut points = vec![];
             let mut betweened = false;
             for (x, y) in (0..x).rev().zip((0..y).rev()) {
-                let putted_color = self.get((x,y));
+                let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -297,7 +306,7 @@ impl Board {
             let mut points = vec![];
             let mut betweened = false;
             for (x, y) in ((x + 1)..8).zip((y + 1)..8) {
-                let putted_color = self.get((x,y));
+                let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -320,7 +329,7 @@ impl Board {
             let mut points = vec![];
             let mut betweened = false;
             for (x, y) in ((x + 1)..8).zip((0..y).rev()) {
-                let putted_color = self.get((x,y));
+                let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -343,7 +352,7 @@ impl Board {
             let mut points = vec![];
             let mut betweened = false;
             for (x, y) in (0..x).rev().zip((y + 1)..8) {
-                let putted_color = self.get((x,y));
+                let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -406,9 +415,12 @@ fn main() {
         }
     }
     println!("{}", board);
-    println!("WINNER: {} !!", match board.black_points.cmp(&board.white_points){
-        Ordering::Greater => "Black",
-        Ordering::Less => "White",
-        _ => "Draw"
-    });
+    println!(
+        "WINNER: {} !!",
+        match board.black_points.cmp(&board.white_points) {
+            Ordering::Greater => "Black",
+            Ordering::Less => "White",
+            _ => "Draw",
+        }
+    );
 }
