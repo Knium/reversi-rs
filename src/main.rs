@@ -56,6 +56,7 @@ macro_rules! read_value {
 
 use self::Color::*;
 use std::fmt::{Display, Formatter, Result};
+use std::cmp::Ordering;
 
 type Position = (usize, usize);
 
@@ -86,6 +87,8 @@ struct Board {
     map: [[Option<Color>; 8]; 8],
     latest: (usize, usize),
     turn: Color,
+    black_points: i32,
+    white_points: i32
 }
 
 impl Board {
@@ -94,42 +97,76 @@ impl Board {
             map: [[None; 8]; 8],
             latest: (4, 4),
             turn: Black,
+            black_points: 0,
+            white_points: 0
         };
-        b.set((3, 3), Black); // Black
-        b.set((3, 4), White); // White
-        b.set((4, 4), Black); // Black
-        b.set((4, 3), White); // White
+        b.set_with_color((3, 3), Black); // Black
+        b.set_with_color((3, 4), White); // White
+        b.set_with_color((4, 4), Black); // Black
+        b.set_with_color((4, 3), White); // White
         b
     }
 
     fn get(&self, (x, y): Position) -> Option<Color> {
         self.map[y][x]
     }
+    
+    fn set(&mut self, (x, y): Position, color: Option<Color>) {
+        self.map[y][x] = color;
+    }
 
-    fn set(&mut self, (x, y): (usize, usize), color: Color) {
-        self.map[y][x] = Some(color);
+    fn set_with_color(&mut self, position: Position, color: Color) {
+        self.set(position, Some(color));
+        self.incr_points(color);
+    }
+
+    fn plus_points_with_color(&mut self, n: i32, color: Color) {
+        if color == Black {
+            self.black_points += n;
+        } else {
+            self.white_points += n;
+        }
+    }
+
+    fn incr_points(&mut self, color: Color) {
+        self.plus_points_with_color(1, color);
+    }
+    
+    fn decr_points(&mut self, color: Color) {
+        self.plus_points_with_color(-1, color);
     }
 
     fn put(&mut self, (x, y): (usize, usize)) {
         if let None = self.get((x, y)) {
-            self.set((x, y), self.turn);
+            let ex = self.latest;
+            self.set_with_color((x, y), self.turn);
             self.latest = (x, y);
-            self.reverse();
+            let positions = self.reversable_points();
+            if positions.len() == 0 {
+                self.set(self.latest, None);
+                self.decr_points(self.turn);
+                println!("{:?} has no reversable points, try again!", self.latest);
+                self.latest = ex;
+                return;
+            } else {
+                for position in positions {
+                    self.set_with_color(position, self.turn);
+                    self.decr_points(self.turn.another());
+                }
+            }
             self.turn = self.turn.another();
         } else {
             println!("{:?} is already put!! {}", (x, y), self.get((x, y)).unwrap().to_s());
         }
     }
 
-    fn reverse(&mut self) {
+    fn reversable_points(&self) -> Vec<Position> {
         let mut h = self.horizontal();
         let mut v = self.vertical();
         let mut d = self.diagonal();
         h.append(&mut v);
         h.append(&mut d);
-        for point in h.iter() {
-            self.set(*point, self.turn);
-        }
+        h
     }
 
     fn horizontal(&self) -> Vec<Position> {
@@ -335,6 +372,7 @@ impl Board {
 impl Display for Board {
     #[allow(unused_must_use)]
     fn fmt(&self, f: &mut Formatter) -> Result {
+        writeln!(f, "B: {}, W: {}", self.black_points, self.white_points);
         for column in self.map.iter() {
             writeln!(f, "---------------------------------");
             for elem in column.iter() {
@@ -357,10 +395,20 @@ impl Display for Board {
 fn main() {
     let mut board = Board::new();
     loop {
+        println!("{:?}'s turn!", board.turn);
         println!("{}", board);
         input! {
             x: (usize, usize)
         };
         board.put(x);
+        if board.black_points + board.white_points == 64 {
+            break;
+        }
     }
+    println!("{}", board);
+    println!("WINNER: {} !!", match board.black_points.cmp(&board.white_points){
+        Ordering::Greater => "Black",
+        Ordering::Less => "White",
+        _ => "Draw"
+    });
 }
