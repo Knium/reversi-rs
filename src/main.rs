@@ -83,18 +83,18 @@ impl Color {
 }
 
 #[derive(Clone, Copy, Debug)]
-struct Board {
-    map: [[Option<Color>; 8]; 8],
+struct Game {
+    board: [[Option<Color>; 8]; 8],
     latest: (usize, usize),
     turn: Color,
     black_points: i32,
     white_points: i32,
 }
 
-impl Board {
+impl Game {
     fn new() -> Self {
-        let mut b = Board {
-            map: [[None; 8]; 8],
+        let mut b = Game {
+            board: [[None; 8]; 8],
             latest: (4, 4),
             turn: Black,
             black_points: 0,
@@ -107,12 +107,35 @@ impl Board {
         b
     }
 
+    fn start(&mut self) {
+        loop {
+            println!("{:?}'s turn!", self.turn);
+            println!("{}", self);
+            input! {
+                x: (usize, usize)
+            };
+            self.put(x);
+            if self.black_points + self.white_points == 64 {
+                break;
+            }
+        }
+        println!("{}", self);
+        println!(
+            "WINNER: {} !!",
+            match self.black_points.cmp(&self.white_points) {
+                Ordering::Greater => "Black",
+                Ordering::Less => "White",
+                _ => "Draw",
+            }
+        );
+    }
+
     fn get(&self, (x, y): Position) -> Option<Color> {
-        self.map[y][x]
+        self.board[y][x]
     }
 
     fn set(&mut self, (x, y): Position, color: Option<Color>) {
-        self.map[y][x] = color;
+        self.board[y][x] = color;
     }
 
     fn set_with_color(&mut self, position: Position, color: Color) {
@@ -138,6 +161,9 @@ impl Board {
 
     fn put(&mut self, (x, y): (usize, usize)) {
         let position = (x, y);
+        if x == 8 && y == 8 {
+            println!("there are only unputtable positions? ")
+        }
         if x <= 8 && y <= 8 {
             if let None = self.get(position) {
                 let ex = self.latest;
@@ -378,11 +404,11 @@ impl Board {
     }
 }
 
-impl Display for Board {
+impl Display for Game {
     #[allow(unused_must_use)]
     fn fmt(&self, f: &mut Formatter) -> Result {
         writeln!(f, "B: {}, W: {}", self.black_points, self.white_points);
-        for column in self.map.iter() {
+        for column in self.board.iter() {
             writeln!(f, "---------------------------------");
             for elem in column.iter() {
                 write!(
@@ -402,25 +428,6 @@ impl Display for Board {
 }
 
 fn main() {
-    let mut board = Board::new();
-    loop {
-        println!("{:?}'s turn!", board.turn);
-        println!("{}", board);
-        input! {
-            x: (usize, usize)
-        };
-        board.put(x);
-        if board.black_points + board.white_points == 64 {
-            break;
-        }
-    }
-    println!("{}", board);
-    println!(
-        "WINNER: {} !!",
-        match board.black_points.cmp(&board.white_points) {
-            Ordering::Greater => "Black",
-            Ordering::Less => "White",
-            _ => "Draw",
-        }
-    );
+    let mut game = Game::new();
+    game.start();
 }
