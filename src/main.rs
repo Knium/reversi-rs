@@ -128,14 +128,13 @@ impl Board {
 
     fn horizontal(&self) -> Vec<Position> {
         let (x, y) = self.latest;
-        let column = self.map.get(y).unwrap();
-        let mut betweened_with_l = {
+        let mut left = {
             let mut betweened = false;
             let mut points = vec![];
             for x in (0..x).rev() {
-                let putted_color = column.get(x).unwrap();
+                let putted_color = self.map[y][x];
                 if let Some(color) = putted_color {
-                    if &self.turn == color {
+                    if self.turn == color {
                         betweened = true;
                         break;
                     } else {
@@ -151,13 +150,13 @@ impl Board {
                 vec![]
             }
         };
-        let mut betweened_with_r = {
+        let mut right = {
             let mut betweened = false;
             let mut points = vec![];
             for x in (x + 1)..8 {
-                let putted_color = column.get(x).unwrap();
+                let putted_color = self.map[y][x];
                 if let Some(color) = putted_color {
-                    if &self.turn == color {
+                    if self.turn == color {
                         betweened = true;
                         break;
                     } else {
@@ -173,13 +172,13 @@ impl Board {
                 vec![]
             }
         };
-        betweened_with_l.append(&mut betweened_with_r);
-        betweened_with_l
+        left.append(&mut right);
+        left
     }
 
     fn vertical(&self) -> Vec<Position> {
         let (x, y) = self.latest;
-        let mut betweened_with_u = {
+        let mut up = {
             let mut betweened = false;
             let mut points = vec![];
             for y in (0..y).rev() {
@@ -201,7 +200,7 @@ impl Board {
                 vec![]
             }
         };
-        let mut betweened_with_b = {
+        let mut bottom = {
             let mut betweened = false;
             let mut points = vec![];
             for y in (y + 1)..8 {
@@ -223,15 +222,15 @@ impl Board {
                 vec![]
             }
         };
-        betweened_with_u.append(&mut betweened_with_b);
-        betweened_with_u
+        up.append(&mut bottom);
+        up
     }
     fn diagonal(&self) -> Vec<Position> {
         let (x, y) = self.latest;
-        let mut betweened_with_left_up = {
+        let mut left_up = {
             let mut points = vec![];
             let mut betweened = false;
-            for (x,y) in (0..x).rev().zip((0..y).rev()) {
+            for (x, y) in (0..x).rev().zip((0..y).rev()) {
                 let putted_color = &self.map[y][x];
                 if let Some(color) = putted_color {
                     if &self.turn == color {
@@ -251,10 +250,10 @@ impl Board {
             }
         };
 
-        let mut betweened_with_right_bottom = {
+        let mut right_bottom = {
             let mut points = vec![];
             let mut betweened = false;
-            for (x,y) in ((x+1)..8).zip((y+1)..8) {
+            for (x, y) in ((x + 1)..8).zip((y + 1)..8) {
                 let putted_color = &self.map[y][x];
                 if let Some(color) = putted_color {
                     if &self.turn == color {
@@ -274,10 +273,10 @@ impl Board {
             }
         };
 
-        let mut betweened_with_right_up = {
+        let mut right_up = {
             let mut points = vec![];
             let mut betweened = false;
-            for (x,y) in ((x+1)..8).zip((0..y).rev()) {
+            for (x, y) in ((x + 1)..8).zip((0..y).rev()) {
                 let putted_color = &self.map[y][x];
                 if let Some(color) = putted_color {
                     if &self.turn == color {
@@ -297,10 +296,10 @@ impl Board {
             }
         };
 
-        let mut betweened_with_left_bottom = {
+        let mut left_bottom = {
             let mut points = vec![];
             let mut betweened = false;
-            for (x,y) in (0..x).rev().zip((y+1)..8) {
+            for (x, y) in (0..x).rev().zip((y + 1)..8) {
                 let putted_color = &self.map[y][x];
                 if let Some(color) = putted_color {
                     if &self.turn == color {
@@ -320,15 +319,14 @@ impl Board {
             }
         };
 
-        betweened_with_left_up.append(&mut betweened_with_left_bottom);
-        betweened_with_left_up.append(&mut betweened_with_right_up);
-        betweened_with_left_up.append(&mut betweened_with_right_bottom);
-        betweened_with_left_up
+        left_up.append(&mut left_bottom);
+        left_up.append(&mut right_up);
+        left_up.append(&mut right_bottom);
+        left_up
     }
 }
 
 impl Display for Board {
-
     #[allow(unused_must_use)]
     fn fmt(&self, f: &mut Formatter) -> Result {
         for column in self.map.iter() {
