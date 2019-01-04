@@ -180,9 +180,54 @@ impl Board {
     }
 
     fn vertical(&self) -> Vec<Position> {
-        vec![]
+        let (x, y) = self.latest;
+        let mut betweened_with_u = {
+            let mut betweened = false;
+            let mut points = vec![];
+            for y in (0..y).rev() {
+                let putted_color = &self.map[y][x];
+                if let Some(color) = putted_color {
+                    if &self.turn == color {
+                        betweened = true;
+                        break;
+                    } else {
+                        points.push((x, y));
+                    }
+                } else {
+                    break;
+                }
+            }
+            if betweened {
+                points
+            } else {
+                vec![]
+            }
+        };
+        let mut betweened_with_b = {
+            let mut betweened = false;
+            let mut points = vec![];
+            for y in (y + 1)..8 {
+                let putted_color = &self.map[y][x];
+                if let Some(color) = putted_color {
+                    if &self.turn == color {
+                        betweened = true;
+                        break;
+                    } else {
+                        points.push((x, y));
+                    }
+                } else {
+                    break;
+                }
+            }
+            if betweened {
+                points
+            } else {
+                vec![]
+            }
+        };
+        betweened_with_u.append(&mut betweened_with_b);
+        betweened_with_u
     }
-
     fn diagonal(&self) -> Vec<Position> {
         vec![]
     }
