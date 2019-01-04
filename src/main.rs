@@ -118,29 +118,56 @@ impl Board {
     }
 
     fn reverse(&mut self) {
-        self.horizontal();
+        println!("{:?}", self.horizontal());
         self.vertical();
         self.diagonal();
     }
 
-    fn horizontal(&mut self) {
-        let (_, y) = self.latest;
-        let column = self.map.get_mut(y).unwrap();
-        let mut points = vec![];
-        let mut betweened_flag = false;
-        for (x, point) in column.iter().enumerate() {
-            if let Some(color) = point {
-                match (&self.turn == color, betweened_flag) {
-                    (true, false) => betweened_flag = true,
-                    (false, true) => points.push((x,y)),
-                    (true, true) => betweened_flag = false,
-                    (false, false) => (),
+    fn horizontal(&self) -> Vec<Position> {
+        let (x, y) = self.latest;
+        let column = self.map.get(y).unwrap();
+        let mut betweened_with_l = {
+            let mut betweened = false;
+            let mut points = vec![];
+            for x in (0..x).rev() {
+                let putted_color = column.get(x).unwrap();
+                if let Some(color) = putted_color {
+                    if &self.turn == color {
+                        betweened = true;
+                        break;
+                    } else {
+                        points.push((x, y));
+                    }
                 }
             }
-        }
-        for point in points.iter() {
-            self.set(*point, self.turn);
-        }
+            if betweened {
+                points
+            } else {
+                vec![]
+            }
+        };
+        let mut betweened_with_r = {
+            let mut betweened = false;
+            let mut points = vec![];
+            for x in (x + 1)..8 {
+                let putted_color = column.get(x).unwrap();
+                if let Some(color) = putted_color {
+                    if &self.turn == color {
+                        betweened = true;
+                        break;
+                    } else {
+                        points.push((x, y));
+                    }
+                }
+            }
+            if betweened {
+                points
+            } else {
+                vec![]
+            }
+        };
+        betweened_with_l.append(&mut betweened_with_r);
+        betweened_with_l
     }
 
     fn vertical(&self) {}
