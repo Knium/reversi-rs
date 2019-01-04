@@ -189,6 +189,8 @@ impl Board {
 }
 
 impl Display for Board {
+
+    #[allow(unused_must_use)]
     fn fmt(&self, f: &mut Formatter) -> Result {
         for column in self.map.iter() {
             writeln!(f, "---------------------------------");
