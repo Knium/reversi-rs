@@ -118,9 +118,14 @@ impl Board {
     }
 
     fn reverse(&mut self) {
-        println!("{:?}", self.horizontal());
-        self.vertical();
-        self.diagonal();
+        let mut h = self.horizontal();
+        let mut v = self.vertical();
+        let mut d = self.diagonal();
+        h.append(&mut v);
+        h.append(&mut d);
+        for point in h.iter() {
+            self.set(*point, self.turn);
+        }
     }
 
     fn horizontal(&self) -> Vec<Position> {
@@ -138,6 +143,8 @@ impl Board {
                     } else {
                         points.push((x, y));
                     }
+                } else {
+                    break;
                 }
             }
             if betweened {
@@ -158,6 +165,8 @@ impl Board {
                     } else {
                         points.push((x, y));
                     }
+                } else {
+                    break;
                 }
             }
             if betweened {
@@ -170,9 +179,13 @@ impl Board {
         betweened_with_l
     }
 
-    fn vertical(&self) {}
+    fn vertical(&self) -> Vec<Position> {
+        vec![]
+    }
 
-    fn diagonal(&self) {}
+    fn diagonal(&self) -> Vec<Position> {
+        vec![]
+    }
 }
 
 impl Display for Board {
