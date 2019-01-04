@@ -1,5 +1,3 @@
-#![warn(unused_must_use)]
-
 // Rustで競技プログラミングの入力をスッキリ記述するマクロ
 // https://qiita.com/tanakh/items/0ba42c7ca36cd29d0ac8
 
@@ -229,7 +227,103 @@ impl Board {
         betweened_with_u
     }
     fn diagonal(&self) -> Vec<Position> {
-        vec![]
+        let (x, y) = self.latest;
+        let mut betweened_with_left_up = {
+            let mut points = vec![];
+            let mut betweened = false;
+            for (x,y) in (0..x).rev().zip((0..y).rev()) {
+                let putted_color = &self.map[y][x];
+                if let Some(color) = putted_color {
+                    if &self.turn == color {
+                        betweened = true;
+                        break;
+                    } else {
+                        points.push((x, y));
+                    }
+                } else {
+                    break;
+                }
+            }
+            if betweened {
+                points
+            } else {
+                vec![]
+            }
+        };
+
+        let mut betweened_with_right_bottom = {
+            let mut points = vec![];
+            let mut betweened = false;
+            for (x,y) in ((x+1)..8).zip((y+1)..8) {
+                let putted_color = &self.map[y][x];
+                if let Some(color) = putted_color {
+                    if &self.turn == color {
+                        betweened = true;
+                        break;
+                    } else {
+                        points.push((x, y));
+                    }
+                } else {
+                    break;
+                }
+            }
+            if betweened {
+                points
+            } else {
+                vec![]
+            }
+        };
+
+        let mut betweened_with_right_up = {
+            let mut points = vec![];
+            let mut betweened = false;
+            for (x,y) in ((x+1)..8).zip((0..y).rev()) {
+                let putted_color = &self.map[y][x];
+                if let Some(color) = putted_color {
+                    if &self.turn == color {
+                        betweened = true;
+                        break;
+                    } else {
+                        points.push((x, y));
+                    }
+                } else {
+                    break;
+                }
+            }
+            if betweened {
+                points
+            } else {
+                vec![]
+            }
+        };
+
+        let mut betweened_with_left_bottom = {
+            let mut points = vec![];
+            let mut betweened = false;
+            for (x,y) in (0..x).rev().zip((y+1)..8) {
+                let putted_color = &self.map[y][x];
+                if let Some(color) = putted_color {
+                    if &self.turn == color {
+                        betweened = true;
+                        break;
+                    } else {
+                        points.push((x, y));
+                    }
+                } else {
+                    break;
+                }
+            }
+            if betweened {
+                points
+            } else {
+                vec![]
+            }
+        };
+
+        betweened_with_left_up.append(&mut betweened_with_left_bottom);
+        betweened_with_left_up.append(&mut betweened_with_right_up);
+        betweened_with_left_up.append(&mut betweened_with_right_bottom);
+        betweened_with_left_up
     }
 }
 
