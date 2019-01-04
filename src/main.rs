@@ -102,17 +102,23 @@ impl Board {
         b
     }
 
+    fn get(&self, (x, y): Position) -> Option<Color> {
+        self.map[y][x]
+    }
+
     fn set(&mut self, (x, y): (usize, usize), color: Color) {
-        let s = self.map.get_mut(y).unwrap();
-        s[x] = Some(color);
+        self.map[y][x] = Some(color);
     }
 
     fn put(&mut self, (x, y): (usize, usize)) {
-        let s = self.map.get_mut(y).unwrap();
-        s[x] = Some(self.turn);
-        self.latest = (x, y);
-        self.reverse();
-        self.turn = self.turn.another();
+        if let None = self.get((x, y)) {
+            self.set((x, y), self.turn);
+            self.latest = (x, y);
+            self.reverse();
+            self.turn = self.turn.another();
+        } else {
+            println!("{:?} is already put!! {}", (x, y), self.get((x, y)).unwrap().to_s());
+        }
     }
 
     fn reverse(&mut self) {
@@ -132,7 +138,7 @@ impl Board {
             let mut betweened = false;
             let mut points = vec![];
             for x in (0..x).rev() {
-                let putted_color = self.map[y][x];
+                let putted_color = self.get((x,y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -154,7 +160,7 @@ impl Board {
             let mut betweened = false;
             let mut points = vec![];
             for x in (x + 1)..8 {
-                let putted_color = self.map[y][x];
+                let putted_color = self.get((x,y));
                 if let Some(color) = putted_color {
                     if self.turn == color {
                         betweened = true;
@@ -182,9 +188,9 @@ impl Board {
             let mut betweened = false;
             let mut points = vec![];
             for y in (0..y).rev() {
-                let putted_color = &self.map[y][x];
+                let putted_color = self.get((x,y));
                 if let Some(color) = putted_color {
-                    if &self.turn == color {
+                    if self.turn == color {
                         betweened = true;
                         break;
                     } else {
@@ -204,9 +210,9 @@ impl Board {
             let mut betweened = false;
             let mut points = vec![];
             for y in (y + 1)..8 {
-                let putted_color = &self.map[y][x];
+                let putted_color = self.get((x,y));
                 if let Some(color) = putted_color {
-                    if &self.turn == color {
+                    if self.turn == color {
                         betweened = true;
                         break;
                     } else {
@@ -231,9 +237,9 @@ impl Board {
             let mut points = vec![];
             let mut betweened = false;
             for (x, y) in (0..x).rev().zip((0..y).rev()) {
-                let putted_color = &self.map[y][x];
+                let putted_color = self.get((x,y));
                 if let Some(color) = putted_color {
-                    if &self.turn == color {
+                    if self.turn == color {
                         betweened = true;
                         break;
                     } else {
@@ -254,9 +260,9 @@ impl Board {
             let mut points = vec![];
             let mut betweened = false;
             for (x, y) in ((x + 1)..8).zip((y + 1)..8) {
-                let putted_color = &self.map[y][x];
+                let putted_color = self.get((x,y));
                 if let Some(color) = putted_color {
-                    if &self.turn == color {
+                    if self.turn == color {
                         betweened = true;
                         break;
                     } else {
@@ -277,9 +283,9 @@ impl Board {
             let mut points = vec![];
             let mut betweened = false;
             for (x, y) in ((x + 1)..8).zip((0..y).rev()) {
-                let putted_color = &self.map[y][x];
+                let putted_color = self.get((x,y));
                 if let Some(color) = putted_color {
-                    if &self.turn == color {
+                    if self.turn == color {
                         betweened = true;
                         break;
                     } else {
@@ -300,9 +306,9 @@ impl Board {
             let mut points = vec![];
             let mut betweened = false;
             for (x, y) in (0..x).rev().zip((y + 1)..8) {
-                let putted_color = &self.map[y][x];
+                let putted_color = self.get((x,y));
                 if let Some(color) = putted_color {
-                    if &self.turn == color {
+                    if self.turn == color {
                         betweened = true;
                         break;
                     } else {
