@@ -87,6 +87,7 @@ impl Color {
 struct Game {
     board: [[Option<Color>; 8]; 8],
     unput_positions: HashSet<Position>,
+    both_skip: bool,
     latest: (usize, usize),
     turn: Color,
     black_points: i32,
@@ -98,6 +99,7 @@ impl Game {
         let mut b = Game {
             board: [[None; 8]; 8],
             unput_positions: HashSet::new(),
+            both_skip: false,
             latest: (4, 4),
             turn: Black,
             black_points: 0,
@@ -122,8 +124,14 @@ impl Game {
             if p.len() == 0 {
                 println!("Hmm, you can't put anywhere... skip your turn!");
                 self.turn = self.turn.another();
-                continue;
+                if self.both_skip {
+                    break;
+                } else {
+                    self.both_skip = true;
+                    continue;
+                }
             } else {
+                self.both_skip = false;
                 println!("puttable positions: {:?}", p);
             }
             println!("{}", self);
