@@ -56,7 +56,8 @@ macro_rules! read_value {
 
 use self::Color::*;
 use std::cmp::Ordering;
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{Display, Formatter};
+use std::collections::HashSet;
 
 type Position = (usize, usize);
 
@@ -82,9 +83,10 @@ impl Color {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 struct Game {
     board: [[Option<Color>; 8]; 8],
+    unput_positions: HashSet<Position>,
     latest: (usize, usize),
     turn: Color,
     black_points: i32,
@@ -95,11 +97,17 @@ impl Game {
     fn new() -> Self {
         let mut b = Game {
             board: [[None; 8]; 8],
+            unput_positions: HashSet::new(),
             latest: (4, 4),
             turn: Black,
             black_points: 0,
             white_points: 0,
         };
+        for i in 0..8 {
+            for j in 0..8 {
+                b.unput_positions.insert((i, j));
+            }
+        }
         b.set_with_color((3, 3), Black); // Black
         b.set_with_color((3, 4), White); // White
         b.set_with_color((4, 4), Black); // Black
@@ -118,6 +126,7 @@ impl Game {
             if self.black_points + self.white_points == 64 {
                 break;
             }
+            println!("{:?}", self.unput_positions.len());
         }
         println!("{}", self);
         println!(
@@ -141,6 +150,7 @@ impl Game {
     fn set_with_color(&mut self, position: Position, color: Color) {
         self.set(position, Some(color));
         self.incr_points(color);
+        self.unput_positions.remove(&position);
     }
 
     fn plus_points_with_color(&mut self, n: i32, color: Color) {
@@ -173,6 +183,7 @@ impl Game {
                 if positions.len() == 0 {
                     self.set(self.latest, None);
                     self.decr_points(self.turn);
+                    self.unput_positions.insert(self.latest);
                     println!("{:?} has no reversable points, try again!", self.latest);
                     self.latest = ex;
                     return;
@@ -406,7 +417,7 @@ impl Game {
 
 impl Display for Game {
     #[allow(unused_must_use)]
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         writeln!(f, "B: {}, W: {}", self.black_points, self.white_points);
         for column in self.board.iter() {
             writeln!(f, "---------------------------------");
