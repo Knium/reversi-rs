@@ -230,7 +230,7 @@ impl Game {
         let (x, y) = self.latest;
         let mut left = {
             let mut betweened = false;
-            let mut points = vec![];
+            let mut candidates = vec![];
             for x in (0..x).rev() {
                 let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
@@ -238,21 +238,21 @@ impl Game {
                         betweened = true;
                         break;
                     } else {
-                        points.push((x, y));
+                        candidates.push((x, y));
                     }
                 } else {
                     break;
                 }
             }
             if betweened {
-                points
+                candidates
             } else {
                 vec![]
             }
         };
         let mut right = {
             let mut betweened = false;
-            let mut points = vec![];
+            let mut candidates = vec![];
             for x in (x + 1)..8 {
                 let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
@@ -260,14 +260,14 @@ impl Game {
                         betweened = true;
                         break;
                     } else {
-                        points.push((x, y));
+                        candidates.push((x, y));
                     }
                 } else {
                     break;
                 }
             }
             if betweened {
-                points
+                candidates
             } else {
                 vec![]
             }
@@ -280,7 +280,7 @@ impl Game {
         let (x, y) = self.latest;
         let mut up = {
             let mut betweened = false;
-            let mut points = vec![];
+            let mut candidates = vec![];
             for y in (0..y).rev() {
                 let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
@@ -288,21 +288,21 @@ impl Game {
                         betweened = true;
                         break;
                     } else {
-                        points.push((x, y));
+                        candidates.push((x, y));
                     }
                 } else {
                     break;
                 }
             }
             if betweened {
-                points
+                candidates
             } else {
                 vec![]
             }
         };
         let mut bottom = {
             let mut betweened = false;
-            let mut points = vec![];
+            let mut candidates = vec![];
             for y in (y + 1)..8 {
                 let putted_color = self.get((x, y));
                 if let Some(color) = putted_color {
@@ -310,14 +310,14 @@ impl Game {
                         betweened = true;
                         break;
                     } else {
-                        points.push((x, y));
+                        candidates.push((x, y));
                     }
                 } else {
                     break;
                 }
             }
             if betweened {
-                points
+                candidates
             } else {
                 vec![]
             }
@@ -328,7 +328,7 @@ impl Game {
     fn diagonal(&self) -> Vec<Position> {
         let (x, y) = self.latest;
         let mut left_up = {
-            let mut points = vec![];
+            let mut candidates = vec![];
             let mut betweened = false;
             for (x, y) in (0..x).rev().zip((0..y).rev()) {
                 let putted_color = self.get((x, y));
@@ -337,21 +337,21 @@ impl Game {
                         betweened = true;
                         break;
                     } else {
-                        points.push((x, y));
+                        candidates.push((x, y));
                     }
                 } else {
                     break;
                 }
             }
             if betweened {
-                points
+                candidates
             } else {
                 vec![]
             }
         };
 
         let mut right_bottom = {
-            let mut points = vec![];
+            let mut candidates = vec![];
             let mut betweened = false;
             for (x, y) in ((x + 1)..8).zip((y + 1)..8) {
                 let putted_color = self.get((x, y));
@@ -360,21 +360,21 @@ impl Game {
                         betweened = true;
                         break;
                     } else {
-                        points.push((x, y));
+                        candidates.push((x, y));
                     }
                 } else {
                     break;
                 }
             }
             if betweened {
-                points
+                candidates
             } else {
                 vec![]
             }
         };
 
         let mut right_up = {
-            let mut points = vec![];
+            let mut candidates = vec![];
             let mut betweened = false;
             for (x, y) in ((x + 1)..8).zip((0..y).rev()) {
                 let putted_color = self.get((x, y));
@@ -383,21 +383,21 @@ impl Game {
                         betweened = true;
                         break;
                     } else {
-                        points.push((x, y));
+                        candidates.push((x, y));
                     }
                 } else {
                     break;
                 }
             }
             if betweened {
-                points
+                candidates
             } else {
                 vec![]
             }
         };
 
         let mut left_bottom = {
-            let mut points = vec![];
+            let mut candidates = vec![];
             let mut betweened = false;
             for (x, y) in (0..x).rev().zip((y + 1)..8) {
                 let putted_color = self.get((x, y));
@@ -406,14 +406,14 @@ impl Game {
                         betweened = true;
                         break;
                     } else {
-                        points.push((x, y));
+                        candidates.push((x, y));
                     }
                 } else {
                     break;
                 }
             }
             if betweened {
-                points
+                candidates
             } else {
                 vec![]
             }
