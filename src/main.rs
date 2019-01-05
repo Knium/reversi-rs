@@ -56,8 +56,8 @@ macro_rules! read_value {
 
 use self::Color::*;
 use std::cmp::Ordering;
-use std::fmt::{Display, Formatter};
 use std::collections::HashSet;
+use std::fmt::{Display, Formatter};
 
 type Position = (usize, usize);
 
@@ -87,6 +87,7 @@ impl Color {
 struct Game {
     board: [[Option<Color>; 8]; 8],
     unput_positions: HashSet<Position>,
+    puttable_positions: HashSet<Position>,
     both_skip: bool,
     latest: (usize, usize),
     turn: Color,
@@ -99,6 +100,7 @@ impl Game {
         let mut b = Game {
             board: [[None; 8]; 8],
             unput_positions: HashSet::new(),
+            puttable_positions: HashSet::new(),
             both_skip: false,
             latest: (4, 4),
             turn: Black,
@@ -120,8 +122,8 @@ impl Game {
     fn start(&mut self) {
         loop {
             println!("{:?}'s turn!", self.turn);
-            let p = self.find_puttable_positions();
-            if p.len() == 0 {
+            self.puttable_positions = self.find_puttable_positions();
+            if self.puttable_positions.len() == 0 {
                 println!("Hmm, you can't put anywhere... skip your turn!");
                 self.turn = self.turn.another();
                 if self.both_skip {
@@ -132,7 +134,7 @@ impl Game {
                 }
             } else {
                 self.both_skip = false;
-                println!("puttable positions: {:?}", p);
+                println!("puttable positions: {:?}", self.puttable_positions);
             }
             println!("{}", self);
             input! {
@@ -190,7 +192,7 @@ impl Game {
         for position in self.unput_positions.clone().into_iter() {
             self.set(position, Some(self.turn));
             self.latest = position;
-            if self.reversable_points().len() != 0 {
+            if self.reversable_positions().len() != 0 {
                 set.insert(position);
             }
             self.set(position, None);
@@ -199,41 +201,23 @@ impl Game {
         set
     }
 
-    fn put(&mut self, (x, y): (usize, usize)) {
-        let position = (x, y);
-        if x <= 8 && y <= 8 {
-            if let None = self.get(position) {
-                let ex = self.latest;
-                self.set_with_color(position, self.turn);
-                self.latest = position;
-                let positions = self.reversable_points();
-                if positions.len() == 0 {
-                    self.set(self.latest, None);
-                    self.decr_points(self.turn);
-                    self.unput_positions.insert(self.latest);
-                    println!("{:?} has no reversable points, try again!", self.latest);
-                    self.latest = ex;
-                    return;
-                } else {
-                    for position in positions {
-                        self.set_with_color(position, self.turn);
-                        self.decr_points(self.turn.another());
-                    }
-                }
-                self.turn = self.turn.another();
-            } else {
-                println!(
-                    "{:?} is already put!! {}",
-                    (x, y),
-                    self.get((x, y)).unwrap().to_s()
-                );
+    fn put(&mut self, position: Position) {
+        if self.puttable_positions.contains(&position) {
+            self.set_with_color(position, self.turn);
+            self.latest = position;
+            for position in self.reversable_positions().iter() {
+                self.set_with_color(*position, self.turn);
+                self.decr_points(self.turn.another());
             }
+            self.turn = self.turn.another();
+        } else if let Some(color) = self.get(position) {
+            println!("{:?} is already put!! {:?}", position, color);
         } else {
-            println!("You tried to put invalid position {:?}", (x, y));
+            println!("perhaps, you input invalid position: {:?}", position);
         }
     }
 
-    fn reversable_points(&self) -> Vec<Position> {
+    fn reversable_positions(&self) -> Vec<Position> {
         let mut h = self.horizontal();
         let mut v = self.vertical();
         let mut d = self.diagonal();
