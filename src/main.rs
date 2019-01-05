@@ -118,6 +118,14 @@ impl Game {
     fn start(&mut self) {
         loop {
             println!("{:?}'s turn!", self.turn);
+            let p = self.find_puttable_positions();
+            if p.len() == 0 {
+                println!("Hmm, you can't put anywhere... skip your turn!");
+                self.turn = self.turn.another();
+                continue;
+            } else {
+                println!("puttable positions: {:?}", p);
+            }
             println!("{}", self);
             input! {
                 x: (usize, usize)
@@ -126,7 +134,6 @@ impl Game {
             if self.black_points + self.white_points == 64 {
                 break;
             }
-            println!("{:?}", self.unput_positions.len());
         }
         println!("{}", self);
         println!(
@@ -169,11 +176,23 @@ impl Game {
         self.plus_points_with_color(-1, color);
     }
 
+    fn find_puttable_positions(&mut self) -> HashSet<Position> {
+        let ex = self.latest;
+        let mut set = HashSet::new();
+        for position in self.unput_positions.clone().into_iter() {
+            self.set(position, Some(self.turn));
+            self.latest = position;
+            if self.reversable_points().len() != 0 {
+                set.insert(position);
+            }
+            self.set(position, None);
+            self.latest = ex;
+        }
+        set
+    }
+
     fn put(&mut self, (x, y): (usize, usize)) {
         let position = (x, y);
-        if x == 8 && y == 8 {
-            println!("there are only unputtable positions? ")
-        }
         if x <= 8 && y <= 8 {
             if let None = self.get(position) {
                 let ex = self.latest;
