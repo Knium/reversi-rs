@@ -54,10 +54,36 @@ macro_rules! read_value {
     };
 }
 
+macro_rules! find_reversable_positions {
+    ($self: ident, $x_range: expr, $y_range: expr ) => {{
+        let mut betweened = false;
+        let mut candidates = vec![];
+        for (x, y) in $x_range.zip($y_range) {
+            let putted_color = $self.get((x, y));
+            if let Some(color) = putted_color {
+                if $self.turn == color {
+                    betweened = true;
+                    break;
+                } else {
+                    candidates.push((x, y));
+                }
+            } else {
+                break;
+            }
+        }
+        if betweened {
+            candidates
+        } else {
+            vec![]
+        }
+    };};
+}
+
 use self::Color::*;
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
+use std::iter::repeat;
 
 type Position = (usize, usize);
 
@@ -228,197 +254,26 @@ impl Game {
 
     fn horizontal(&self) -> Vec<Position> {
         let (x, y) = self.latest;
-        let mut left = {
-            let mut betweened = false;
-            let mut candidates = vec![];
-            for x in (0..x).rev() {
-                let putted_color = self.get((x, y));
-                if let Some(color) = putted_color {
-                    if self.turn == color {
-                        betweened = true;
-                        break;
-                    } else {
-                        candidates.push((x, y));
-                    }
-                } else {
-                    break;
-                }
-            }
-            if betweened {
-                candidates
-            } else {
-                vec![]
-            }
-        };
-        let mut right = {
-            let mut betweened = false;
-            let mut candidates = vec![];
-            for x in (x + 1)..8 {
-                let putted_color = self.get((x, y));
-                if let Some(color) = putted_color {
-                    if self.turn == color {
-                        betweened = true;
-                        break;
-                    } else {
-                        candidates.push((x, y));
-                    }
-                } else {
-                    break;
-                }
-            }
-            if betweened {
-                candidates
-            } else {
-                vec![]
-            }
-        };
+        let mut left = find_reversable_positions!(self, (0..x).rev(), repeat(y));
+        let mut right = find_reversable_positions!(self, (x + 1)..8, repeat(y));
         left.append(&mut right);
         left
     }
 
     fn vertical(&self) -> Vec<Position> {
         let (x, y) = self.latest;
-        let mut up = {
-            let mut betweened = false;
-            let mut candidates = vec![];
-            for y in (0..y).rev() {
-                let putted_color = self.get((x, y));
-                if let Some(color) = putted_color {
-                    if self.turn == color {
-                        betweened = true;
-                        break;
-                    } else {
-                        candidates.push((x, y));
-                    }
-                } else {
-                    break;
-                }
-            }
-            if betweened {
-                candidates
-            } else {
-                vec![]
-            }
-        };
-        let mut bottom = {
-            let mut betweened = false;
-            let mut candidates = vec![];
-            for y in (y + 1)..8 {
-                let putted_color = self.get((x, y));
-                if let Some(color) = putted_color {
-                    if self.turn == color {
-                        betweened = true;
-                        break;
-                    } else {
-                        candidates.push((x, y));
-                    }
-                } else {
-                    break;
-                }
-            }
-            if betweened {
-                candidates
-            } else {
-                vec![]
-            }
-        };
+        let mut up = find_reversable_positions!(self, repeat(x), (0..y).rev());
+        let mut bottom = find_reversable_positions!(self, repeat(x), (y + 1)..8);
         up.append(&mut bottom);
         up
     }
+
     fn diagonal(&self) -> Vec<Position> {
         let (x, y) = self.latest;
-        let mut left_up = {
-            let mut candidates = vec![];
-            let mut betweened = false;
-            for (x, y) in (0..x).rev().zip((0..y).rev()) {
-                let putted_color = self.get((x, y));
-                if let Some(color) = putted_color {
-                    if self.turn == color {
-                        betweened = true;
-                        break;
-                    } else {
-                        candidates.push((x, y));
-                    }
-                } else {
-                    break;
-                }
-            }
-            if betweened {
-                candidates
-            } else {
-                vec![]
-            }
-        };
-
-        let mut right_bottom = {
-            let mut candidates = vec![];
-            let mut betweened = false;
-            for (x, y) in ((x + 1)..8).zip((y + 1)..8) {
-                let putted_color = self.get((x, y));
-                if let Some(color) = putted_color {
-                    if self.turn == color {
-                        betweened = true;
-                        break;
-                    } else {
-                        candidates.push((x, y));
-                    }
-                } else {
-                    break;
-                }
-            }
-            if betweened {
-                candidates
-            } else {
-                vec![]
-            }
-        };
-
-        let mut right_up = {
-            let mut candidates = vec![];
-            let mut betweened = false;
-            for (x, y) in ((x + 1)..8).zip((0..y).rev()) {
-                let putted_color = self.get((x, y));
-                if let Some(color) = putted_color {
-                    if self.turn == color {
-                        betweened = true;
-                        break;
-                    } else {
-                        candidates.push((x, y));
-                    }
-                } else {
-                    break;
-                }
-            }
-            if betweened {
-                candidates
-            } else {
-                vec![]
-            }
-        };
-
-        let mut left_bottom = {
-            let mut candidates = vec![];
-            let mut betweened = false;
-            for (x, y) in (0..x).rev().zip((y + 1)..8) {
-                let putted_color = self.get((x, y));
-                if let Some(color) = putted_color {
-                    if self.turn == color {
-                        betweened = true;
-                        break;
-                    } else {
-                        candidates.push((x, y));
-                    }
-                } else {
-                    break;
-                }
-            }
-            if betweened {
-                candidates
-            } else {
-                vec![]
-            }
-        };
-
+        let mut left_up = find_reversable_positions!(self, (0..x).rev(), (0..y).rev());
+        let mut left_bottom = find_reversable_positions!(self, (0..x).rev(), (y + 1)..8);
+        let mut right_bottom = find_reversable_positions!(self, ((x + 1)..8), (y + 1)..8);
+        let mut right_up = find_reversable_positions!(self, ((x + 1)..8), (0..y).rev());
         left_up.append(&mut left_bottom);
         left_up.append(&mut right_up);
         left_up.append(&mut right_bottom);
